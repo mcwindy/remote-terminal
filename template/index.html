@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ .title }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@4.15.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/xterm@4.15.0/css/xterm.css"
+    />
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+      #terminal {
+        height: 100vh;
+        width: 100vw;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="terminal"></div>
+    <script>
+      var term = new Terminal();
+      var fitAddon = new FitAddon.FitAddon();
+      term.loadAddon(fitAddon);
+      term.open(document.getElementById("terminal"));
+      fitAddon.fit();
+      // var conn = new WebSocket("ws://" + location.host);
+      // conn.addEventListener("open", () => {
+      //   var dim = fitAddon.proposeDimensions();
+      //   conn.send("1," + dim.rows + "," + dim.cols);
+      // });
+      // conn.addEventListener("message", async (message) => {
+      //   term.write(await message.data.text());
+      // });
+      // term.onData((data) => {
+      //   conn.send("0," + data);
+      // });
+      // window.addEventListener(
+      //   "resize",
+      //   () => {
+      //     fitAddon.fit();
+      //     var dim = fitAddon.proposeDimensions();
+      //     if (conn.readyState == conn.OPEN) {
+      //       conn.send("1," + dim.rows + "," + dim.cols);
+      //     }
+      //   },
+      //   false
+      // );
+    </script>
+  </body>
+</html>
