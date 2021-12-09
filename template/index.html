@@ -31,28 +31,29 @@
       term.loadAddon(fitAddon);
       term.open(document.getElementById("terminal"));
       fitAddon.fit();
-      // var conn = new WebSocket("ws://" + location.host);
-      // conn.addEventListener("open", () => {
-      //   var dim = fitAddon.proposeDimensions();
-      //   conn.send("1," + dim.rows + "," + dim.cols);
-      // });
-      // conn.addEventListener("message", async (message) => {
-      //   term.write(await message.data.text());
-      // });
-      // term.onData((data) => {
-      //   conn.send("0," + data);
-      // });
-      // window.addEventListener(
-      //   "resize",
-      //   () => {
-      //     fitAddon.fit();
-      //     var dim = fitAddon.proposeDimensions();
-      //     if (conn.readyState == conn.OPEN) {
-      //       conn.send("1," + dim.rows + "," + dim.cols);
-      //     }
-      //   },
-      //   false
-      // );
+      var conn = new WebSocket("wss://" + location.host + "/container/connect");
+      conn.binaryType = "arraybuffer";
+      conn.addEventListener("open", () => {
+        var dim = fitAddon.proposeDimensions();
+        conn.send(JSON.stringify({ type: 1, data: [dim.rows, dim.cols] }));
+      });
+      conn.addEventListener("message", async (message) => {
+        term.write(new Uint8Array(message.data));
+      });
+      term.onData((data) => {
+        conn.send(JSON.stringify({ type: 0, data: data }));
+      });
+      window.addEventListener(
+        "resize",
+        () => {
+          fitAddon.fit();
+          var dim = fitAddon.proposeDimensions();
+          if (conn.readyState == conn.OPEN) {
+            conn.send(JSON.stringify({ type: 1, data: [dim.rows, dim.cols] }));
+          }
+        },
+        false
+      );
     </script>
   </body>
 </html>

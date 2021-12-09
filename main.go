@@ -1,49 +1,9 @@
 package main
 
 import (
-	controller "github.com/ChenKS12138/remote-terminal/controller"
-	"github.com/gin-gonic/gin"
+	"github.com/ChenKS12138/remote-terminal/cmd"
 )
 
-// var upGrader = websocket.Upgrader{
-// 	CheckOrigin: func(r *http.Request) bool {
-// 		return true
-// 	},
-// }
-
-// //webSocket请求ping 返回pong
-// func ping(c *gin.Context) {
-// 	//升级get请求为webSocket协议
-// 	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
-// 	if err != nil {
-// 		return
-// 	}
-// 	defer ws.Close()
-// 	for {
-// 		//读取ws中的数据
-// 		mt, message, err := ws.ReadMessage()
-// 		if err != nil {
-// 			break
-// 		}
-// 		if string(message) == "ping" {
-// 			message = []byte("pong")
-// 		}
-// 		//写入ws数据
-// 		err = ws.WriteMessage(mt, message)
-// 		if err != nil {
-// 			break
-// 		}
-// 	}
-// }
-
 func main() {
-	index := controller.NewIndexController()
-	container := controller.NewContainerController()
-	r := gin.Default()
-	r.LoadHTMLGlob("template/*.html")
-
-	index.Group(r.Group("/"))
-	container.Group(r.Group("/container"))
-
-	r.Run("localhost:8000")
+	cmd.Boost()
 }

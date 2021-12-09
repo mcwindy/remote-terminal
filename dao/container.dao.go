@@ -1,11 +1,10 @@
 package dao
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io"
-	"net"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -35,11 +34,17 @@ func NewContainerDao() (*ContainerDao, error) {
 
 func (c *ContainerDao) getContainerName(ID string) string {
 	configDao := NewConfigDaoMust()
-	return fmt.Sprintf("%s-%s", configDao.ContainerPrefix, ID)
+	prefix := configDao.ContainerPrefix
+	if len(prefix) == 0 {
+		prefix = "remote_terminal_default"
+	}
+	return fmt.Sprintf("%s-%s", prefix, ID)
 }
 
 func (c *ContainerDao) findByContainerID(containerID string) (*types.Container, error) {
-	containers, err := c.cli.ContainerList(c.ctx, types.ContainerListOptions{})
+	containers, err := c.cli.ContainerList(c.ctx, types.ContainerListOptions{
+		All: true,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +57,15 @@ func (c *ContainerDao) findByContainerID(containerID string) (*types.Container, 
 }
 
 func (c *ContainerDao) FindByID(ID string) (*types.Container, error) {
-	containers, err := c.cli.ContainerList(c.ctx, types.ContainerListOptions{})
+	containers, err := c.cli.ContainerList(c.ctx, types.ContainerListOptions{
+		All: true,
+	})
 	containerName := c.getContainerName(ID)
 	if err != nil {
 		return nil, err
 	}
 	for _, container := range containers {
-		if len(container.Names) != 0 && container.Names[0] == containerName {
+		if len(container.Names) != 0 && container.Names[0] == fmt.Sprintf("/%s", containerName) {
 			return &container, nil
 		}
 	}
@@ -88,9 +95,7 @@ func (c *ContainerDao) CreateByID(ID string, out io.Writer) (*types.Container, e
 	return container, err
 }
 
-func (c *ContainerDao) AttachAndWaitByID(cont *types.Container, conn net.Conn) error {
-	// TODO attach stdin stdout stderr
-	out := make(chan []byte)
+func (c *ContainerDao) AttachAndWait(cont *types.Container, in io.Reader, out io.Writer, wsCloseChan chan interface{}, resizeChan chan [2]float64) error {
 	if err := c.cli.ContainerStart(c.ctx, cont.ID, types.ContainerStartOptions{}); err != nil {
 		return err
 	}
@@ -103,34 +108,36 @@ func (c *ContainerDao) AttachAndWaitByID(cont *types.Container, conn net.Conn) e
 	if err != nil {
 		return err
 	}
-	go io.Copy(conn, waiter.Reader)
-	go func() {
-		scanner := bufio.NewScanner(conn)
-		for scanner.Scan() {
-			out <- []byte(scanner.Text())
-		}
-	}()
-
-	go func(w io.WriteCloser) {
-		for {
-			data, ok := <-out
-			if !ok {
-				w.Close()
-				return
-			}
-			w.Write(data)
-		}
-	}(waiter.Conn)
+	go io.Copy(out, waiter.Reader)
+	go io.Copy(waiter.Conn, in)
 
 	statusCh, errCh := c.cli.ContainerWait(c.ctx, cont.ID, container.WaitConditionNotRunning)
-
-	select {
-	case err := <-errCh:
-		if err != nil {
-			return err
+	waiter.Conn.Write([]byte("\r"))
+	for {
+		select {
+		case err := <-errCh:
+			if err != nil {
+				return err
+			}
+		case <-statusCh:
+			return nil
+		case <-wsCloseChan:
+			return nil
+		case size := <-resizeChan:
+			c.Resize(cont, uint(size[0]), uint(size[1]))
 		}
-	case <-statusCh:
 	}
 
-	return nil
+}
+
+func (c *ContainerDao) Resize(cont *types.Container, height uint, width uint) error {
+	return c.cli.ContainerResize(c.ctx, cont.ID, types.ResizeOptions{
+		Height: height,
+		Width:  width,
+	})
+}
+
+func (c *ContainerDao) Shutdown(cont *types.Container) error {
+	timeout := time.Duration(1) * time.Second
+	return c.cli.ContainerStop(c.ctx, cont.ID, &timeout)
 }

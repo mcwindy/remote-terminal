@@ -1,20 +1,26 @@
 package dao
 
+import "time"
+
 type ConfigDao struct {
 	// service
 	BindAddr        string
 	JwtSecret       string
+	JwtExpire       time.Duration
 	ContainerPrefix string
+	DiaProxy        string
 
 	// github oauth
 	ClientID        string
 	ClientSecret    string
 	RedirectUrl     string
-	validGithubUser []string
+	ValidGithubUser map[string]interface{}
 }
 
+var Config ConfigDao
+
 func NewConfigDao() (*ConfigDao, error) {
-	return &ConfigDao{}, nil
+	return &Config, nil
 }
 
 func NewConfigDaoMust() *ConfigDao {
@@ -25,7 +31,7 @@ func NewConfigDaoMust() *ConfigDao {
 	return dao
 }
 
-func (c *ConfigDao) IsValidGithubUser(username string) bool {
-	println(c.validGithubUser)
-	return true
+func (c *ConfigDao) IsValidGithubUser(username string) (ok bool) {
+	_, ok = c.ValidGithubUser[username]
+	return ok
 }

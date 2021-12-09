@@ -4,10 +4,67 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Error|remote-terminal</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+      .container {
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20vh;
+      }
+      .container > div {
+        margin: 5px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container > div > div {
+        padding: 0 0.5rem;
+      }
+      .product {
+        font-size: 1.25rem;
+        border-right: #222 2px solid;
+        padding: 0.25rem;
+        height: 3rem;
+        line-height: 3rem;
+      }
+      .title {
+        color: #222;
+        font-size: 1.5rem;
+      }
+      .title-reason {
+        color: #777777;
+      }
+      .description {
+        font-size: 1rem;
+        color: #777777;
+      }
+      .actions {
+        font-size: 0.75rem;
+      }
+    </style>
   </head>
   <body>
-    <div>{{ .error }}</div>
-    <div>{{ .description }}</div>
+    <div class="container">
+      <div>
+        <div class="product">Remote-Terminal</div>
+        <div class="error">
+          <div class="title">
+            <span>Error</span>
+            <span class="title-reason">{{ .error }}</span>
+          </div>
+          <div class="description">{{ .description }}</div>
+        </div>
+      </div>
+      <div class="actions">
+        <a href="/">Back To Homepage</a>
+      </div>
+    </div>
   </body>
 </html>

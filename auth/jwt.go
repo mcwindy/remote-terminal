@@ -1,8 +1,7 @@
 package auth
 
 import (
-	"fmt"
-	"strconv"
+	"time"
 
 	"github.com/ChenKS12138/remote-terminal/dao"
 	"github.com/gin-gonic/gin"
@@ -17,23 +16,18 @@ type PermissionType = uint64
 type Claim struct {
 	GithubLogin    string
 	PermissionMask PermissionType
+	jwt.StandardClaims
 }
 
-func GetClaim(c *gin.Context) *Claim {
-	contextClaim := c.Keys[GIN_CLAIM_KEY].(jwt.MapClaims)
-	permissionMask, _ := strconv.ParseUint(contextClaim["PermissionMask"].(string), 10, 64)
-	claim := &Claim{
-		GithubLogin:    contextClaim["GithubLogin"].(string),
-		PermissionMask: permissionMask,
-	}
-	return claim
+func GetClaim(c *gin.Context) Claim {
+	contextClaim := c.Keys[GIN_CLAIM_KEY].(Claim)
+	return contextClaim
 }
 
 func SignClaim(claim *Claim) (string, error) {
 	configDao := dao.NewConfigDaoMust()
-	c := jwt.NewWithClaims(&jwt.SigningMethodHMAC{}, jwt.MapClaims{
-		"GithubLogin":    claim.GithubLogin,
-		"PermissionMask": fmt.Sprintf("%d", claim.PermissionMask),
-	})
-	return c.SignedString(configDao.JwtSecret)
+	claim.ExpiresAt = time.Now().Add(time.Hour * 1).Unix()
+	claim.IssuedAt = time.Now().Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	return token.SignedString([]byte(configDao.JwtSecret))
 }
