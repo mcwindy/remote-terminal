@@ -31,29 +31,54 @@
       term.loadAddon(fitAddon);
       term.open(document.getElementById("terminal"));
       fitAddon.fit();
-      var conn = new WebSocket("wss://" + location.host + "/container/connect");
-      conn.binaryType = "arraybuffer";
-      conn.addEventListener("open", () => {
-        var dim = fitAddon.proposeDimensions();
-        conn.send(JSON.stringify({ type: 1, data: [dim.rows, dim.cols] }));
+      var dataEventTarget = new EventTarget();
+
+      term.onData(function (data) {
+        const evt = new Event("data");
+        evt.data = data;
+        dataEventTarget.dispatchEvent(evt);
       });
-      conn.addEventListener("message", async (message) => {
-        term.write(new Uint8Array(message.data));
-      });
-      term.onData((data) => {
-        conn.send(JSON.stringify({ type: 0, data: data }));
-      });
-      window.addEventListener(
-        "resize",
-        () => {
+
+      function connect() {
+        var conn = new WebSocket(
+          "wss://" + location.host + "/container/connect"
+        );
+        var sendData = function (evt) {
+          conn.send(JSON.stringify({ type: 0, data: evt.data }));
+        };
+        dataEventTarget.addEventListener("data", sendData);
+        var syncResize = function () {
           fitAddon.fit();
           var dim = fitAddon.proposeDimensions();
           if (conn.readyState == conn.OPEN) {
             conn.send(JSON.stringify({ type: 1, data: [dim.rows, dim.cols] }));
           }
-        },
-        false
-      );
+        };
+        var timer = setInterval(syncResize, 30000);
+        window.addEventListener("resize", syncResize, false);
+
+        conn.binaryType = "arraybuffer";
+        conn.addEventListener("open", () => {
+          syncResize();
+          term.focus();
+        });
+        conn.addEventListener("message", async (message) => {
+          term.write(new Uint8Array(message.data));
+        });
+        conn.addEventListener("error", (err) => {
+          console.error(err);
+          conn.close();
+        });
+        conn.addEventListener("close", () => {
+          clearInterval(timer);
+          dataEventTarget.removeEventListener("data", sendData);
+          setTimeout(() => {
+            term.write("Try To Reconnect...\r\n");
+            connect();
+          }, 1000);
+        });
+      }
+      connect();
     </script>
   </body>
 </html>
