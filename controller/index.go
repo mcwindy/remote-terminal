@@ -31,7 +31,6 @@ func (i *IndexController) Group(g *gin.RouterGroup) {
 	g.Use(middleware.Recover(func(c *gin.Context, i interface{}) {
 		c.SetCookie(auth.COOKIE_NAME, "", -1, "/", "", false, false)
 		c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=%s", configDao.ClientID, configDao.RedirectUrl, SCOPE))
-	}))
-	g.Use(auth.RequireAuth(permission.None))
+	}), auth.RequireAuth(permission.RunOwnContainer))
 	g.GET("/", i.index)
 }

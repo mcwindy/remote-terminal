@@ -7,6 +7,7 @@ func Recover(handler func(*gin.Context, interface{})) gin.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				handler(c, err)
+				c.Abort()
 			}
 		}()
 		c.Next()

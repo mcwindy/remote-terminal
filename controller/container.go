@@ -90,10 +90,7 @@ func NewContainerController() *ContainerController {
 }
 
 func (cc *ContainerController) connect(c *gin.Context) {
-	// claim := auth.GetClaim(c)
-	claim := auth.Claim{
-		GithubLogin: "ChenKS12138",
-	}
+	claim := auth.GetClaim(c)
 
 	ws, err := upGrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
