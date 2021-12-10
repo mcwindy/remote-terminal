@@ -1,0 +1,13 @@
+version: 1
+jwt:
+  secret: jwt_secret_123
+  expire: 1h
+container:
+  prefix: remote-terminal
+oauth:
+  github:
+    clientID: ID
+    clientSecret: secret
+    redirectUrl: https://terminal.cattchen.top/oauth/redirect
+    validLoginIDs:
+      - ChenKS12138

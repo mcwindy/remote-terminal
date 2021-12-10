@@ -16,25 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type YamlConfig struct {
-	Version int `yaml:"version"`
-	Jwt     struct {
-		Secret string `yaml:"secret"`
-		Expire string `yaml:"expire"`
-	} `yaml:"jwt"`
-	Container struct {
-		Prefix string `yaml:"prefix"`
-	} `yaml:"container"`
-	Oauth struct {
-		Github struct {
-			ClientID      string   `yaml:"clientID"`
-			ClientSecret  string   `yaml:"clientSecret"`
-			RedirectUrl   string   `yaml:"redirectUrl"`
-			ValidLoginIDs []string `yaml:"validLoginIDs"`
-		} `yaml:"github"`
-	} `yaml:"oauth"`
-}
-
 func loadConfig() {
 	configUrl := flag.String("config", "", "load online configuration")
 	proxyUrl := flag.String("proxy", "", "net proxy")
