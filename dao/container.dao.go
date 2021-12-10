@@ -87,7 +87,7 @@ func (c *ContainerDao) CreateByID(ID string, out io.Writer) (*types.Container, e
 		Cmd:          []string{CONTAINER_COMMAND},
 		Image:        CONTAINER_IMAGE,
 		Env:          []string{"TERM=xterm-256color"},
-	}, nil, nil, nil, c.getContainerName(ID+CONTAINER_IMAGE))
+	}, nil, nil, nil, c.getContainerName(ID))
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/ChenKS12138/remote-terminal/controller"
 	"github.com/ChenKS12138/remote-terminal/dao"
+	"github.com/ChenKS12138/remote-terminal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -61,6 +62,12 @@ func Boost() {
 
 	r := gin.New()
 	r.LoadHTMLGlob("template/*.html")
+
+	r.Use(middleware.Recover(func(c *gin.Context, i interface{}) {
+		log.Println(i)
+		c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/oauth/redirect?error=%s&error_description=%s", "Unexpected Error", "service shutdown for unknown reason, try later!"))
+		c.Abort()
+	}))
 
 	index.Group(r.Group("/"))
 	container.Group(r.Group("/container"))

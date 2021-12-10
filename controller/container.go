@@ -136,10 +136,13 @@ func (cc *ContainerController) connect(c *gin.Context) {
 
 func (c *ContainerController) Group(g *gin.RouterGroup) {
 	g.Use(middleware.Recover(func(c *gin.Context, i interface{}) {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    -1,
-			"message": "unauthorized",
-		})
+		err, errOk := i.(error)
+		if errOk && err == auth.ErrAuthorizationFail {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"code":    -1,
+				"message": "unauthorized",
+			})
+		}
 	}), auth.RequireAuth(permission.RunOwnContainer))
 	g.GET("/connect", c.connect)
 }
