@@ -49,7 +49,7 @@ func redirect(c *gin.Context) {
 		return
 	}
 	if !configDao.IsValidGithubUser(loginID) {
-		c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/oauth/redirect?error=%s&error_description=%s%s", "Unauthorized", loginID, ",You're Not In Whitelist!"))
+		c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/oauth/redirect?error=%s&error_description=%s%s", "Unauthorized", loginID, ",You're Not In Whitelist!Wait for 10mins"))
 		return
 	}
 

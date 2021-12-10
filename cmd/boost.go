@@ -13,8 +13,6 @@ import (
 	"github.com/ChenKS12138/remote-terminal/controller"
 	"github.com/ChenKS12138/remote-terminal/dao"
 	"github.com/gin-gonic/gin"
-	"github.com/go-resty/resty/v2"
-	"gopkg.in/yaml.v2"
 )
 
 type YamlConfig struct {
@@ -48,37 +46,9 @@ func loadConfig() {
 		os.Exit(0)
 	}
 
-	log.Println("Ready To Fetch Config!")
-	resp, err := resty.New().SetProxy(*proxyUrl).R().Get(*configUrl)
-
-	if err != nil {
-		panic(err)
-	}
-
-	yamlConfig := &YamlConfig{}
-
-	if err = yaml.Unmarshal(resp.Body(), yamlConfig); err != nil {
-		panic(err)
-	}
-
-	expire, err := time.ParseDuration(yamlConfig.Jwt.Expire)
-
-	if err != nil {
-		panic(err)
-	}
-
-	dao.Config.ClientID = yamlConfig.Oauth.Github.ClientID
-	dao.Config.ClientSecret = yamlConfig.Oauth.Github.ClientSecret
-	dao.Config.RedirectUrl = yamlConfig.Oauth.Github.RedirectUrl
-	dao.Config.JwtSecret = yamlConfig.Jwt.Secret
-	dao.Config.DiaProxy = *proxyUrl
-	dao.Config.JwtExpire = expire
-	dao.Config.BindAddr = *bindAddr
-	dao.Config.ContainerPrefix = yamlConfig.Container.Prefix
-	dao.Config.ValidGithubUser = make(map[string]interface{})
-	for _, loginId := range yamlConfig.Oauth.Github.ValidLoginIDs {
-		dao.Config.ValidGithubUser[loginId] = nil
-	}
+	log.Println("Config Ready To Init!")
+	dao.InitConfig(*configUrl, *proxyUrl, *bindAddr)
+	log.Println("Config Init Ready!")
 }
 
 func Boost() {
@@ -101,6 +71,7 @@ func Boost() {
 		Handler: r,
 	}
 	go func() {
+		log.Println("Server Start")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}

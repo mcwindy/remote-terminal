@@ -42,7 +42,6 @@ func NewGithubDaoFromCode(code string) (*GithubDao, error) {
 
 func (g *GithubDao) GetLoginID() (loginId string, err error) {
 	defer func() {
-		// err = recover()
 		r := recover()
 		if r != nil {
 			switch r.(type) {

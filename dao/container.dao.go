@@ -84,10 +84,10 @@ func (c *ContainerDao) CreateByID(ID string, out io.Writer) (*types.Container, e
 		Tty:          true,
 		AttachStdout: true,
 		OpenStdin:    true,
-		Cmd:          []string{"/bin/bash", "-"},
-		Image:        "debian:11",
+		Cmd:          []string{CONTAINER_COMMAND},
+		Image:        CONTAINER_IMAGE,
 		Env:          []string{"TERM=xterm-256color"},
-	}, nil, nil, nil, c.getContainerName(ID))
+	}, nil, nil, nil, c.getContainerName(ID+CONTAINER_IMAGE))
 	if err != nil {
 		return nil, err
 	}
