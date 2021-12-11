@@ -11,8 +11,8 @@ import (
 var ErrAuthorizationFail = errors.New("authorization fail")
 
 func RequireAuth(permission PermissionType) gin.HandlerFunc {
-	configDao := dao.NewConfigDaoMust()
 	return func(c *gin.Context) {
+		configDao := dao.NewConfigDaoMust()
 		tokenStr, err := c.Cookie(COOKIE_NAME)
 		if err != nil {
 			panic(ErrAuthorizationFail)
