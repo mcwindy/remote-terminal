@@ -44,7 +44,7 @@
 
       function connect() {
         var conn = new WebSocket(
-          "ws://" + location.host + "/container/connect"
+          "ws://" + location.host + "/container/connect" // modified
         );
         var sendData = function (evt) {
           conn.send(JSON.stringify({ type: 0, data: evt.data }));
